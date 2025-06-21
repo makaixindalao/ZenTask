@@ -1,0 +1,2 @@
+# 此文件确保 migrations 目录被 Git 跟踪
+# Prisma 迁移文件将在开发过程中生成到此目录
