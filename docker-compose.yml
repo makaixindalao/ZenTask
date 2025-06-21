@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: zentask-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: zentask
+      MYSQL_USER: zentask
+      MYSQL_PASSWORD: zentask123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - zentask-network
+
+  # 后端 API 服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: zentask-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "mysql://zentask:zentask123@mysql:3306/zentask"
+      JWT_SECRET: "your-super-secret-jwt-key-here"
+      JWT_EXPIRES_IN: "7d"
+      PORT: 3000
+      NODE_ENV: "production"
+      CORS_ORIGIN: "http://localhost:5173"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    networks:
+      - zentask-network
+
+  # 前端应用
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: zentask-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - zentask-network
+
+volumes:
+  mysql_data:
+
+networks:
+  zentask-network:
+    driver: bridge
