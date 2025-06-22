@@ -1,12 +1,26 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTaskDto, UpdateTaskDto, TaskQueryDto, ReorderTasksDto } from './dto/task.dto';
+import { CreateTaskDto, UpdateTaskDto, TaskQueryDto, ReorderTasksDto, PriorityDto } from './dto/task.dto';
 import { Task, TaskStatus, Priority } from '@prisma/client';
 import { PaginatedResult } from '../common/dto/pagination.dto';
 
+// 优先级转换函数
+function convertPriorityToEnum(priority: PriorityDto): Priority {
+  switch (priority) {
+    case PriorityDto.LOW:
+      return Priority.LOW;
+    case PriorityDto.MEDIUM:
+      return Priority.MEDIUM;
+    case PriorityDto.HIGH:
+      return Priority.HIGH;
+    default:
+      return Priority.MEDIUM;
+  }
+}
+
 @Injectable()
 export class TasksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(userId: number, createTaskDto: CreateTaskDto): Promise<Task> {
     // 验证项目是否属于当前用户
@@ -32,7 +46,7 @@ export class TasksService {
         projectId: createTaskDto.projectId,
         title: createTaskDto.title,
         description: createTaskDto.description,
-        priority: createTaskDto.priority || Priority.MEDIUM,
+        priority: createTaskDto.priority ? convertPriorityToEnum(createTaskDto.priority) : Priority.MEDIUM,
         dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) : null,
         sortOrder: nextSortOrder,
       },
@@ -134,6 +148,9 @@ export class TasksService {
     const updateData: any = { ...updateTaskDto };
     if (updateTaskDto.dueDate) {
       updateData.dueDate = new Date(updateTaskDto.dueDate);
+    }
+    if (updateTaskDto.priority) {
+      updateData.priority = convertPriorityToEnum(updateTaskDto.priority);
     }
 
     return this.prisma.task.update({

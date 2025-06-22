@@ -36,10 +36,42 @@ zentask/
 
 ### 环境要求
 - Node.js >= 18.0.0
-- MySQL >= 8.0
+- MySQL >= 8.0 (可选，支持Docker自动启动)
 - npm 或 yarn
+- Docker & Docker Compose (可选)
 
-### 安装依赖
+### 方式一：智能启动脚本（推荐）
+
+**Linux/macOS:**
+```bash
+# 智能启动（自动检测MySQL服务）
+chmod +x start-smart.sh
+./start-smart.sh
+
+# 或使用原始启动脚本
+chmod +x start.sh
+./start.sh
+```
+
+**Windows:**
+```cmd
+# 智能启动（自动检测MySQL服务）
+start-smart.bat
+
+# 或使用原始启动脚本
+start.bat
+```
+
+**智能启动特性：**
+- 🔍 自动检测已运行的MySQL服务
+- 🚀 智能选择启动方式（使用现有服务或启动新容器）
+- 💡 避免重复启动MySQL容器
+- 📝 详细的状态日志输出
+- ⚡ 零配置启动体验
+
+### 方式二：手动启动
+
+#### 安装依赖
 
 ```bash
 # 安装前端依赖
@@ -51,7 +83,7 @@ cd ../backend
 npm install
 ```
 
-### 启动开发环境
+#### 启动开发环境
 
 ```bash
 # 启动后端服务 (端口: 3000)
@@ -63,8 +95,25 @@ cd frontend
 npm run dev
 ```
 
+### 方式三：Docker 容器化部署
+
+```bash
+# 启动所有服务（包括MySQL）
+docker-compose up -d
+
+# 仅启动MySQL服务
+docker-compose -f docker-compose.mysql-only.yml up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 停止服务
+docker-compose down
+```
+
 ## 功能特性
 
+### 应用功能
 - ✅ 用户注册/登录
 - ✅ 多项目列表管理
 - ✅ 任务CRUD操作
@@ -73,6 +122,13 @@ npm run dev
 - ✅ 响应式设计
 - ✅ 深浅色主题切换
 - ✅ 优雅的动画效果
+
+### 部署特性
+- 🔧 智能MySQL服务检测
+- 🐳 Docker容器化支持
+- 🚀 一键启动脚本
+- 📊 服务状态监控
+- 🔄 自动环境配置
 
 ## 开发计划
 

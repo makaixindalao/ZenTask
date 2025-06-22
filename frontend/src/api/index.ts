@@ -32,6 +32,11 @@ api.interceptors.request.use(
 // 响应拦截器
 api.interceptors.response.use(
   (response: AxiosResponse) => {
+    // 如果响应有success字段且为true，返回data字段的内容
+    if (response.data && response.data.success && response.data.data) {
+      return response.data.data
+    }
+    // 否则返回原始响应数据
     return response.data
   },
   (error) => {
@@ -41,7 +46,7 @@ api.interceptors.response.use(
       authStore.logout()
       window.location.href = '/login'
     }
-    
+
     return Promise.reject(error)
   }
 )

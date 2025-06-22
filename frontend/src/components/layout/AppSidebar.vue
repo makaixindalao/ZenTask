@@ -132,16 +132,16 @@
           required
           :error="createProjectError"
         />
-
-        <template #footer>
-          <BaseButton variant="secondary" @click="showCreateProject = false">
-            取消
-          </BaseButton>
-          <BaseButton type="submit" :loading="projectsStore.loading">
-            创建
-          </BaseButton>
-        </template>
       </form>
+
+      <template #footer>
+        <BaseButton variant="secondary" @click="showCreateProject = false">
+          取消
+        </BaseButton>
+        <BaseButton type="submit" :loading="projectsStore.loading" @click="handleCreateProject">
+          创建
+        </BaseButton>
+      </template>
     </BaseModal>
 
     <!-- 编辑项目模态框 -->

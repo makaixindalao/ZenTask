@@ -13,6 +13,13 @@ import {
 import { Transform, Type } from 'class-transformer';
 import { TaskStatus, Priority } from '@prisma/client';
 
+// 定义前端使用的优先级类型
+export enum PriorityDto {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+}
+
 export class CreateTaskDto {
   @IsInt()
   @IsPositive()
@@ -29,8 +36,8 @@ export class CreateTaskDto {
   description?: string;
 
   @IsOptional()
-  @IsEnum(Priority)
-  priority?: Priority = Priority.MEDIUM;
+  @IsEnum(PriorityDto, { message: '优先级必须是 low、medium 或 high' })
+  priority?: PriorityDto = PriorityDto.MEDIUM;
 
   @IsOptional()
   @IsDateString()
@@ -54,8 +61,8 @@ export class UpdateTaskDto {
   status?: TaskStatus;
 
   @IsOptional()
-  @IsEnum(Priority)
-  priority?: Priority;
+  @IsEnum(PriorityDto, { message: '优先级必须是 low、medium 或 high' })
+  priority?: PriorityDto;
 
   @IsOptional()
   @IsDateString()
@@ -74,8 +81,8 @@ export class TaskQueryDto {
   status?: TaskStatus;
 
   @IsOptional()
-  @IsEnum(Priority)
-  priority?: Priority;
+  @IsEnum(PriorityDto)
+  priority?: PriorityDto;
 
   @IsOptional()
   @IsDateString()

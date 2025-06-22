@@ -14,37 +14,37 @@
           :error="nameError"
         />
       </div>
-      
+
       <div v-if="error" class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
         <p class="text-red-600 dark:text-red-400 text-sm">{{ error }}</p>
       </div>
-      
-      <template #footer>
-        <div class="flex justify-between w-full">
-          <BaseButton
-            v-if="project && !project.isInbox"
-            variant="danger"
-            @click="handleDelete"
-            :loading="deleting"
-          >
-            删除项目
-          </BaseButton>
-          
-          <div class="flex space-x-3 ml-auto">
-            <BaseButton variant="secondary" @click="handleClose">
-              取消
-            </BaseButton>
-            <BaseButton 
-              type="submit" 
-              :loading="loading"
-              :disabled="!isFormValid"
-            >
-              保存
-            </BaseButton>
-          </div>
-        </div>
-      </template>
     </form>
+
+    <template #footer>
+      <div class="flex justify-between w-full">
+        <BaseButton
+          v-if="project && !project.isInbox"
+          variant="danger"
+          @click="handleDelete"
+          :loading="deleting"
+        >
+          删除项目
+        </BaseButton>
+
+        <div class="flex space-x-3 ml-auto">
+          <BaseButton variant="secondary" @click="handleClose">
+            取消
+          </BaseButton>
+          <BaseButton
+            @click="handleSubmit"
+            :loading="loading"
+            :disabled="!isFormValid"
+          >
+            保存
+          </BaseButton>
+        </div>
+      </div>
+    </template>
   </BaseModal>
 </template>
 
