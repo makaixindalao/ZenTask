@@ -138,6 +138,15 @@
         @cancel="showCreateTask = false"
       />
     </BaseModal>
+
+    <!-- 编辑任务模态框 -->
+    <EditTaskModal
+      :show="showEditTask"
+      :task="editingTask"
+      @close="showEditTask = false"
+      @updated="handleTaskUpdated"
+      @deleted="handleTaskDeleted"
+    />
   </div>
 </template>
 
@@ -154,6 +163,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import TaskItem from '@/components/tasks/TaskItem.vue'
 import CreateTaskForm from '@/components/tasks/CreateTaskForm.vue'
+import EditTaskModal from '@/components/tasks/EditTaskModal.vue'
 
 const projectsStore = useProjectsStore()
 const tasksStore = useTasksStore()
@@ -163,6 +173,8 @@ const viewMode = ref<'list' | 'board'>('list')
 const filterStatus = ref<'all' | 'pending' | 'completed'>('all')
 const sortBy = ref<'sortOrder' | 'createdAt' | 'dueDate' | 'priority'>('sortOrder')
 const showCreateTask = ref(false)
+const showEditTask = ref(false)
+const editingTask = ref<Task | null>(null)
 
 // 计算属性
 const inboxProjectId = computed(() => projectsStore.inboxProject?.id)
@@ -209,8 +221,8 @@ const handleToggleTask = async (task: Task) => {
 }
 
 const handleEditTask = (task: Task) => {
-  tasksStore.setCurrentTask(task)
-  // TODO: 打开编辑任务模态框
+  editingTask.value = task
+  showEditTask.value = true
 }
 
 const handleDeleteTask = async (task: Task) => {
@@ -228,14 +240,38 @@ const handleTaskCreated = (task: Task) => {
   // 任务已在 store 中添加
 }
 
-// 生命周期
-onMounted(async () => {
+const handleTaskUpdated = (task: Task) => {
+  showEditTask.value = false
+  editingTask.value = null
+  // 任务已在 store 中更新
+}
+
+const handleTaskDeleted = (taskId: number) => {
+  showEditTask.value = false
+  editingTask.value = null
+  // 任务已在 store 中删除
+}
+
+// 加载收件箱数据
+const loadInboxData = async () => {
   try {
-    if (inboxProjectId.value) {
-      await tasksStore.fetchTasks({ projectId: inboxProjectId.value })
+    // 先确保项目列表已加载
+    if (projectsStore.projects.length === 0) {
+      await projectsStore.fetchProjects()
+    }
+
+    // 获取收件箱项目ID
+    const inboxId = projectsStore.inboxProject?.id
+    if (inboxId) {
+      await tasksStore.fetchTasks({ projectId: inboxId })
     }
   } catch (error) {
     console.error('加载收件箱任务失败:', error)
   }
+}
+
+// 生命周期
+onMounted(() => {
+  loadInboxData()
 })
 </script>

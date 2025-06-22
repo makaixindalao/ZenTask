@@ -20,6 +20,12 @@ export enum PriorityDto {
   HIGH = 'high',
 }
 
+// 定义前端使用的状态类型
+export enum StatusDto {
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+}
+
 export class CreateTaskDto {
   @IsInt()
   @IsPositive()
@@ -57,8 +63,8 @@ export class UpdateTaskDto {
   description?: string;
 
   @IsOptional()
-  @IsEnum(TaskStatus)
-  status?: TaskStatus;
+  @IsEnum(StatusDto, { message: '状态必须是 pending 或 completed' })
+  status?: StatusDto;
 
   @IsOptional()
   @IsEnum(PriorityDto, { message: '优先级必须是 low、medium 或 high' })
@@ -77,8 +83,8 @@ export class TaskQueryDto {
   projectId?: number;
 
   @IsOptional()
-  @IsEnum(TaskStatus)
-  status?: TaskStatus;
+  @IsEnum(StatusDto)
+  status?: StatusDto;
 
   @IsOptional()
   @IsEnum(PriorityDto)

@@ -237,13 +237,22 @@
         编辑项目表单组件待实现
       </div>
     </BaseModal>
+
+    <!-- 编辑任务模态框 -->
+    <EditTaskModal
+      :show="showEditTask"
+      :task="editingTask"
+      @close="showEditTask = false"
+      @updated="handleTaskUpdated"
+      @deleted="handleTaskDeleted"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { PlusIcon, FolderIcon } from '@heroicons/vue/24/outline'
+import { PlusIcon, FolderIcon, PencilIcon } from '@heroicons/vue/24/outline'
 import { useProjectsStore } from '@/stores/projects'
 import { useTasksStore } from '@/stores/tasks'
 import type { Task } from '@/types'
@@ -255,6 +264,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import CreateTaskForm from '@/components/tasks/CreateTaskForm.vue'
 import TaskItem from '@/components/tasks/TaskItem.vue'
+import EditTaskModal from '@/components/tasks/EditTaskModal.vue'
 
 const route = useRoute()
 const projectsStore = useProjectsStore()
@@ -263,6 +273,8 @@ const tasksStore = useTasksStore()
 // 响应式数据
 const showCreateTask = ref(false)
 const showEditProject = ref(false)
+const showEditTask = ref(false)
+const editingTask = ref<Task | null>(null)
 const filterStatus = ref<'all' | 'pending' | 'completed'>('all')
 const sortBy = ref<'sortOrder' | 'createdAt' | 'dueDate' | 'priority'>('sortOrder')
 const groupBy = ref<'none' | 'status' | 'priority' | 'dueDate'>('none')
@@ -369,14 +381,26 @@ const handleToggleTask = async (task: Task) => {
 }
 
 const handleEditTask = (task: Task) => {
-  tasksStore.setCurrentTask(task)
-  // TODO: 打开编辑任务模态框
+  editingTask.value = task
+  showEditTask.value = true
 }
 
 const handleTaskCreated = (task: Task) => {
   showCreateTask.value = false
   // 任务已在 store 中添加，重新加载任务列表
   tasksStore.fetchTasks({ projectId: projectId.value })
+}
+
+const handleTaskUpdated = (task: Task) => {
+  showEditTask.value = false
+  editingTask.value = null
+  // 任务已在 store 中更新
+}
+
+const handleTaskDeleted = (taskId: number) => {
+  showEditTask.value = false
+  editingTask.value = null
+  // 任务已在 store 中删除
 }
 
 const handleDeleteTask = async (task: Task) => {
@@ -391,10 +415,10 @@ const handleDeleteTask = async (task: Task) => {
 
 const loadProjectData = async () => {
   try {
-    await Promise.all([
-      projectsStore.fetchProject(projectId.value),
-      tasksStore.fetchTasks({ projectId: projectId.value })
-    ])
+    // 先获取项目信息
+    await projectsStore.fetchProject(projectId.value)
+    // 然后获取该项目的任务列表
+    await tasksStore.fetchTasks({ projectId: projectId.value })
   } catch (error) {
     console.error('加载项目数据失败:', error)
   }

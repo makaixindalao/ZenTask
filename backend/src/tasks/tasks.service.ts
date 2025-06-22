@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTaskDto, UpdateTaskDto, TaskQueryDto, ReorderTasksDto, PriorityDto } from './dto/task.dto';
+import { CreateTaskDto, UpdateTaskDto, TaskQueryDto, ReorderTasksDto, PriorityDto, StatusDto } from './dto/task.dto';
 import { Task, TaskStatus, Priority } from '@prisma/client';
 import { PaginatedResult } from '../common/dto/pagination.dto';
 
@@ -16,6 +16,53 @@ function convertPriorityToEnum(priority: PriorityDto): Priority {
     default:
       return Priority.MEDIUM;
   }
+}
+
+// 将 Prisma 枚举转换为前端期望的小写字符串
+function convertPriorityToString(priority: Priority): string {
+  switch (priority) {
+    case Priority.LOW:
+      return 'low';
+    case Priority.MEDIUM:
+      return 'medium';
+    case Priority.HIGH:
+      return 'high';
+    default:
+      return 'medium';
+  }
+}
+
+// 状态转换函数
+function convertStatusToEnum(status: StatusDto): TaskStatus {
+  switch (status) {
+    case StatusDto.PENDING:
+      return TaskStatus.PENDING;
+    case StatusDto.COMPLETED:
+      return TaskStatus.COMPLETED;
+    default:
+      return TaskStatus.PENDING;
+  }
+}
+
+// 将 Prisma 枚举转换为前端期望的小写字符串
+function convertStatusToString(status: TaskStatus): string {
+  switch (status) {
+    case TaskStatus.PENDING:
+      return 'pending';
+    case TaskStatus.COMPLETED:
+      return 'completed';
+    default:
+      return 'pending';
+  }
+}
+
+// 转换任务数据格式
+function transformTask(task: any): any {
+  return {
+    ...task,
+    status: convertStatusToString(task.status),
+    priority: convertPriorityToString(task.priority),
+  };
 }
 
 @Injectable()
@@ -40,7 +87,7 @@ export class TasksService {
 
     const nextSortOrder = (maxSortOrder._max.sortOrder || 0) + 1;
 
-    return this.prisma.task.create({
+    const task = await this.prisma.task.create({
       data: {
         userId,
         projectId: createTaskDto.projectId,
@@ -60,6 +107,8 @@ export class TasksService {
         },
       },
     });
+
+    return transformTask(task);
   }
 
   async findAll(userId: number, query: TaskQueryDto): Promise<PaginatedResult<Task>> {
@@ -107,7 +156,7 @@ export class TasksService {
     ]);
 
     return {
-      data: tasks,
+      data: tasks.map(transformTask),
       total,
       page,
       limit,
@@ -133,7 +182,7 @@ export class TasksService {
       throw new NotFoundException('任务不存在');
     }
 
-    return task;
+    return transformTask(task);
   }
 
   async update(id: number, userId: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
@@ -152,8 +201,11 @@ export class TasksService {
     if (updateTaskDto.priority) {
       updateData.priority = convertPriorityToEnum(updateTaskDto.priority);
     }
+    if (updateTaskDto.status) {
+      updateData.status = convertStatusToEnum(updateTaskDto.status);
+    }
 
-    return this.prisma.task.update({
+    const updatedTask = await this.prisma.task.update({
       where: { id },
       data: updateData,
       include: {
@@ -166,6 +218,8 @@ export class TasksService {
         },
       },
     });
+
+    return transformTask(updatedTask);
   }
 
   async remove(id: number, userId: number): Promise<Task> {
@@ -211,7 +265,7 @@ export class TasksService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    return this.prisma.task.findMany({
+    const tasks = await this.prisma.task.findMany({
       where: {
         userId,
         dueDate: {
@@ -231,6 +285,8 @@ export class TasksService {
       },
       orderBy: { sortOrder: 'asc' },
     });
+
+    return tasks.map(transformTask);
   }
 
   // 获取未来7天内到期的任务
@@ -240,7 +296,7 @@ export class TasksService {
     const nextWeek = new Date(today);
     nextWeek.setDate(nextWeek.getDate() + 7);
 
-    return this.prisma.task.findMany({
+    const tasks = await this.prisma.task.findMany({
       where: {
         userId,
         dueDate: {
@@ -260,5 +316,7 @@ export class TasksService {
       },
       orderBy: [{ dueDate: 'asc' }, { sortOrder: 'asc' }],
     });
+
+    return tasks.map(transformTask);
   }
 }
