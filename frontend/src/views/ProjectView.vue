@@ -141,6 +141,16 @@
                       <option value="dueDate">截止日期</option>
                       <option value="priority">优先级</option>
                     </select>
+
+                    <select
+                      v-model="groupBy"
+                      class="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="none">不分组</option>
+                      <option value="status">按状态分组</option>
+                      <option value="priority">按优先级分组</option>
+                      <option value="dueDate">按截止日期分组</option>
+                    </select>
                   </div>
                   
                   <div class="text-sm text-gray-600 dark:text-gray-400">
@@ -160,67 +170,38 @@
                     </div>
                     
                     <!-- 任务项 -->
-                    <div
-                      v-for="task in filteredTasks"
-                      :key="task.id"
-                      class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        :checked="task.status === 'completed'"
-                        @change="handleToggleTask(task)"
-                        class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    <div v-if="groupBy === 'none'" class="space-y-2">
+                      <TaskItem
+                        v-for="task in filteredTasks"
+                        :key="task.id"
+                        :task="task"
+                        @toggle="handleToggleTask"
+                        @edit="handleEditTask"
+                        @delete="handleDeleteTask"
                       />
-                      
-                      <div class="flex-1 min-w-0">
-                        <div :class="[
-                          'text-sm font-medium',
-                          task.status === 'completed' 
-                            ? 'line-through text-gray-500 dark:text-gray-400' 
-                            : 'text-gray-900 dark:text-gray-100'
-                        ]">
-                          {{ task.title }}
-                        </div>
-                        
-                        <div v-if="task.description" class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">
-                          {{ task.description }}
-                        </div>
-                        
-                        <div class="flex items-center space-x-2 mt-1">
-                          <span
-                            v-if="task.priority !== 'medium'"
-                            :class="[
-                              'text-xs px-2 py-0.5 rounded-full',
-                              task.priority === 'high' 
-                                ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                            ]"
-                          >
-                            {{ task.priority === 'high' ? '高' : '低' }}优先级
-                          </span>
-                          
-                          <span
-                            v-if="task.dueDate"
-                            :class="[
-                              'text-xs px-2 py-0.5 rounded-full',
-                              isOverdue(task.dueDate)
-                                ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                                : isToday(task.dueDate)
-                                ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
-                                : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                            ]"
-                          >
-                            {{ formatDueDate(task.dueDate) }}
-                          </span>
+                    </div>
+
+                    <!-- 分组任务项 -->
+                    <div v-else class="space-y-6">
+                      <div
+                        v-for="group in groupedTasks"
+                        :key="group.name"
+                        class="space-y-2"
+                      >
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
+                          {{ group.name }} ({{ group.tasks.length }})
+                        </h3>
+                        <div class="space-y-2">
+                          <TaskItem
+                            v-for="task in group.tasks"
+                            :key="task.id"
+                            :task="task"
+                            @toggle="handleToggleTask"
+                            @edit="handleEditTask"
+                            @delete="handleDeleteTask"
+                          />
                         </div>
                       </div>
-                      
-                      <button
-                        @click="handleEditTask(task)"
-                        class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                      >
-                        <PencilIcon class="h-4 w-4" />
-                      </button>
                     </div>
                   </div>
                 </BaseCard>
@@ -238,10 +219,11 @@
       size="lg"
       @close="showCreateTask = false"
     >
-      <!-- CreateTaskForm 组件将在后续任务中实现 -->
-      <div class="text-center py-8 text-gray-500">
-        创建任务表单组件待实现
-      </div>
+      <CreateTaskForm
+        :project-id="projectId"
+        @created="handleTaskCreated"
+        @cancel="showCreateTask = false"
+      />
     </BaseModal>
     
     <!-- 编辑项目模态框 -->
@@ -261,10 +243,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { PlusIcon, FolderIcon, PencilIcon } from '@heroicons/vue/24/outline'
+import { PlusIcon, FolderIcon } from '@heroicons/vue/24/outline'
 import { useProjectsStore } from '@/stores/projects'
 import { useTasksStore } from '@/stores/tasks'
-import { formatDueDate, isToday, isOverdue } from '@/utils/date'
 import type { Task } from '@/types'
 
 import AppSidebar from '@/components/layout/AppSidebar.vue'
@@ -272,6 +253,8 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import CreateTaskForm from '@/components/tasks/CreateTaskForm.vue'
+import TaskItem from '@/components/tasks/TaskItem.vue'
 
 const route = useRoute()
 const projectsStore = useProjectsStore()
@@ -282,6 +265,7 @@ const showCreateTask = ref(false)
 const showEditProject = ref(false)
 const filterStatus = ref<'all' | 'pending' | 'completed'>('all')
 const sortBy = ref<'sortOrder' | 'createdAt' | 'dueDate' | 'priority'>('sortOrder')
+const groupBy = ref<'none' | 'status' | 'priority' | 'dueDate'>('none')
 
 // 计算属性
 const projectId = computed(() => Number(route.params.id))
@@ -326,6 +310,55 @@ const filteredTasks = computed(() => {
   return filtered
 })
 
+const groupedTasks = computed(() => {
+  if (groupBy.value === 'none') {
+    return [{ name: '全部任务', tasks: filteredTasks.value }]
+  }
+
+  const groups: { [key: string]: Task[] } = {}
+
+  filteredTasks.value.forEach(task => {
+    let groupKey = ''
+
+    switch (groupBy.value) {
+      case 'status':
+        groupKey = task.status === 'completed' ? '已完成' : '未完成'
+        break
+      case 'priority':
+        groupKey = task.priority === 'high' ? '高优先级' :
+                  task.priority === 'medium' ? '中优先级' : '低优先级'
+        break
+      case 'dueDate':
+        if (!task.dueDate) {
+          groupKey = '无截止日期'
+        } else {
+          const today = new Date()
+          const dueDate = new Date(task.dueDate)
+          const diffTime = dueDate.getTime() - today.getTime()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+          if (diffDays < 0) {
+            groupKey = '已过期'
+          } else if (diffDays === 0) {
+            groupKey = '今天到期'
+          } else if (diffDays <= 7) {
+            groupKey = '本周到期'
+          } else {
+            groupKey = '未来到期'
+          }
+        }
+        break
+    }
+
+    if (!groups[groupKey]) {
+      groups[groupKey] = []
+    }
+    groups[groupKey].push(task)
+  })
+
+  return Object.entries(groups).map(([name, tasks]) => ({ name, tasks }))
+})
+
 // 方法
 const handleToggleTask = async (task: Task) => {
   try {
@@ -338,6 +371,22 @@ const handleToggleTask = async (task: Task) => {
 const handleEditTask = (task: Task) => {
   tasksStore.setCurrentTask(task)
   // TODO: 打开编辑任务模态框
+}
+
+const handleTaskCreated = (task: Task) => {
+  showCreateTask.value = false
+  // 任务已在 store 中添加，重新加载任务列表
+  tasksStore.fetchTasks({ projectId: projectId.value })
+}
+
+const handleDeleteTask = async (task: Task) => {
+  if (confirm('确定要删除这个任务吗？')) {
+    try {
+      await tasksStore.deleteTask(task.id)
+    } catch (error) {
+      console.error('删除任务失败:', error)
+    }
+  }
 }
 
 const loadProjectData = async () => {

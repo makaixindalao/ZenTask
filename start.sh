@@ -194,12 +194,12 @@ main() {
         USE_EXISTING_MYSQL=true
 
         # 询问用户是否使用已存在的MySQL服务
-        read -p "是否使用已存在的MySQL服务? (Y/n): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Nn]$ ]]; then
-            log_error "请先停止现有的MySQL服务，或使用不同的端口"
-            exit 1
-        fi
+        # read -p "是否使用已存在的MySQL服务? (Y/n): " -n 1 -r
+        # echo
+        # if [[ $REPLY =~ ^[Nn]$ ]]; then
+        #     log_error "请先停止现有的MySQL服务，或使用不同的端口"
+        #     exit 1
+        # fi
 
         log_info "将使用已存在的MySQL服务"
     else

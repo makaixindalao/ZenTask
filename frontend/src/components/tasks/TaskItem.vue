@@ -55,7 +55,6 @@
         
         <!-- 优先级标签 -->
         <span
-          v-if="task.priority !== 'medium'"
           :class="[
             'text-xs px-2 py-0.5 rounded-full',
             priorityClasses[task.priority]
@@ -133,9 +132,9 @@ const priorityClasses = computed(() => ({
 }))
 
 const priorityLabels = computed(() => ({
-  high: '高优先级',
-  medium: '中优先级',
-  low: '低优先级'
+  high: PRIORITY_CONFIG.high.label + '优先级',
+  medium: PRIORITY_CONFIG.medium.label + '优先级',
+  low: PRIORITY_CONFIG.low.label + '优先级'
 }))
 
 const dueDateClasses = computed(() => {

@@ -171,10 +171,11 @@
       size="lg"
       @close="showCreateTask = false"
     >
-      <!-- CreateTaskForm 组件将在后续任务中实现 -->
-      <div class="text-center py-8 text-gray-500">
-        创建任务表单组件待实现
-      </div>
+      <CreateTaskForm
+        :project-id="inboxProjectId"
+        @created="handleTaskCreated"
+        @cancel="showCreateTask = false"
+      />
     </BaseModal>
   </div>
 </template>
@@ -183,6 +184,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { PlusIcon, CalendarDaysIcon, PencilIcon } from '@heroicons/vue/24/outline'
 import { useTasksStore } from '@/stores/tasks'
+import { useProjectsStore } from '@/stores/projects'
 import { formatDate } from '@/utils/date'
 import type { Task } from '@/types'
 
@@ -191,14 +193,17 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import CreateTaskForm from '@/components/tasks/CreateTaskForm.vue'
 
 const tasksStore = useTasksStore()
+const projectsStore = useProjectsStore()
 
 // 响应式数据
 const showCreateTask = ref(false)
 
 // 计算属性
 const todayTasks = computed(() => tasksStore.todayTasks)
+const inboxProjectId = computed(() => projectsStore.inboxProject?.id)
 
 const completedCount = computed(() => 
   todayTasks.value.filter(task => task.status === 'completed').length
@@ -224,9 +229,19 @@ const handleEditTask = (task: Task) => {
   // TODO: 打开编辑任务模态框
 }
 
+const handleTaskCreated = (task: Task) => {
+  showCreateTask.value = false
+  // 重新获取今日任务
+  tasksStore.fetchTodayTasks()
+}
+
 // 生命周期
 onMounted(async () => {
   try {
+    // 确保项目列表已加载
+    if (projectsStore.projects.length === 0) {
+      await projectsStore.fetchProjects()
+    }
     await tasksStore.fetchTodayTasks()
   } catch (error) {
     console.error('加载今日任务失败:', error)
