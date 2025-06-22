@@ -5,14 +5,13 @@ import { Project, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(userId: number, createProjectDto: CreateProjectDto): Promise<Project> {
     return this.prisma.project.create({
       data: {
         userId,
         name: createProjectDto.name,
-        isInbox: false,
       },
     });
   }
@@ -27,10 +26,7 @@ export class ProjectsService {
           },
         },
       },
-      orderBy: [
-        { isInbox: 'desc' }, // 收件箱排在最前面
-        { createdAt: 'asc' },
-      ],
+      orderBy: { createdAt: 'asc' },
     });
 
     // 获取未完成任务数量
@@ -93,9 +89,7 @@ export class ProjectsService {
       throw new NotFoundException('项目不存在');
     }
 
-    if (project.isInbox) {
-      throw new ForbiddenException('不能修改收件箱项目');
-    }
+
 
     return this.prisma.project.update({
       where: { id },
@@ -112,9 +106,7 @@ export class ProjectsService {
       throw new NotFoundException('项目不存在');
     }
 
-    if (project.isInbox) {
-      throw new ForbiddenException('不能删除收件箱项目');
-    }
+
 
     // 删除项目时，相关任务会因为外键约束自动删除
     return this.prisma.project.delete({
@@ -122,15 +114,5 @@ export class ProjectsService {
     });
   }
 
-  async getInboxProject(userId: number): Promise<Project> {
-    const inboxProject = await this.prisma.project.findFirst({
-      where: { userId, isInbox: true },
-    });
 
-    if (!inboxProject) {
-      throw new NotFoundException('收件箱项目不存在');
-    }
-
-    return inboxProject;
-  }
 }

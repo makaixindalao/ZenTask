@@ -102,7 +102,6 @@ export class TasksService {
           select: {
             id: true,
             name: true,
-            isInbox: true,
           },
         },
       },
@@ -144,7 +143,6 @@ export class TasksService {
             select: {
               id: true,
               name: true,
-              isInbox: true,
             },
           },
         },
@@ -172,7 +170,6 @@ export class TasksService {
           select: {
             id: true,
             name: true,
-            isInbox: true,
           },
         },
       },
@@ -213,7 +210,7 @@ export class TasksService {
           select: {
             id: true,
             name: true,
-            isInbox: true,
+            showInToday: true,
           },
         },
       },
@@ -258,7 +255,7 @@ export class TasksService {
     await Promise.all(updatePromises);
   }
 
-  // 获取今天到期的任务
+  // 获取今天的任务（包括今天到期的任务和今天创建的任务）
   async getTodayTasks(userId: number): Promise<Task[]> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -268,22 +265,41 @@ export class TasksService {
     const tasks = await this.prisma.task.findMany({
       where: {
         userId,
-        dueDate: {
-          gte: today,
-          lt: tomorrow,
+        OR: [
+          // 今天到期的任务
+          {
+            dueDate: {
+              gte: today,
+              lt: tomorrow,
+            },
+          },
+          // 今天创建的任务（没有截止日期）
+          {
+            createdAt: {
+              gte: today,
+              lt: tomorrow,
+            },
+            dueDate: null,
+          },
+        ],
+        project: {
+          showInToday: true, // 只返回配置为在今天页面显示的项目的任务
         },
-        status: TaskStatus.PENDING,
       },
       include: {
         project: {
           select: {
             id: true,
             name: true,
-            isInbox: true,
+            showInToday: true,
           },
         },
       },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: [
+        { status: 'asc' }, // 未完成的任务排在前面
+        { dueDate: 'asc' },
+        { sortOrder: 'asc' },
+      ],
     });
 
     return tasks.map(transformTask);
@@ -310,7 +326,6 @@ export class TasksService {
           select: {
             id: true,
             name: true,
-            isInbox: true,
           },
         },
       },

@@ -104,6 +104,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 
 interface Props {
   projectId?: number
+  dueDate?: string
 }
 
 const props = defineProps<Props>()
@@ -122,7 +123,7 @@ const form = reactive<CreateTaskRequest & { dueDate?: string }>({
   title: '',
   description: '',
   priority: 'medium' as TaskPriority,
-  dueDate: ''
+  dueDate: props.dueDate || ''
 })
 
 const loading = ref(false)
@@ -201,7 +202,7 @@ const resetForm = () => {
   form.title = ''
   form.description = ''
   form.priority = 'medium'
-  form.dueDate = ''
+  form.dueDate = props.dueDate || ''
   if (!props.projectId) {
     form.projectId = 0
   }
@@ -217,10 +218,10 @@ onMounted(async () => {
       console.error('加载项目列表失败:', error)
     }
   }
-  
-  // 如果没有指定项目ID，默认选择收件箱
-  if (!props.projectId && projectsStore.inboxProject) {
-    form.projectId = projectsStore.inboxProject.id
+
+  // 如果没有指定项目ID，默认选择第一个项目
+  if (!props.projectId && projectsStore.projects.length > 0) {
+    form.projectId = projectsStore.projects[0].id
   }
 })
 </script>

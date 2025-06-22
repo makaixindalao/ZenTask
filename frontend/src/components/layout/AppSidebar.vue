@@ -13,16 +13,6 @@
       <!-- 智能视图 -->
       <div class="space-y-1">
         <router-link
-          to="/dashboard"
-          class="nav-link"
-          :class="{ 'nav-link-active': $route.name === 'dashboard' }"
-        >
-          <InboxIcon class="h-5 w-5" />
-          <span>收件箱</span>
-          <span v-if="inboxCount > 0" class="task-count">{{ inboxCount }}</span>
-        </router-link>
-        
-        <router-link
           to="/today"
           class="nav-link"
           :class="{ 'nav-link-active': $route.name === 'today' }"
@@ -40,6 +30,15 @@
           <ClockIcon class="h-5 w-5" />
           <span>最近7天</span>
           <span v-if="upcomingCount > 0" class="task-count">{{ upcomingCount }}</span>
+        </router-link>
+
+        <router-link
+          to="/calendar"
+          class="nav-link"
+          :class="{ 'nav-link-active': $route.name === 'calendar' }"
+        >
+          <CalendarDaysIcon class="h-5 w-5" />
+          <span>日历视图</span>
         </router-link>
       </div>
       
@@ -159,7 +158,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  InboxIcon,
   CalendarDaysIcon,
   ClockIcon,
   FolderIcon,
@@ -196,10 +194,6 @@ const userInitial = computed(() => {
 })
 
 const customProjects = computed(() => projectsStore.customProjects)
-
-const inboxCount = computed(() => {
-  return projectsStore.inboxProject?.uncompletedTaskCount || 0
-})
 
 const todayCount = computed(() => {
   return tasksStore.todayTasks.length
@@ -244,10 +238,10 @@ const handleProjectUpdated = (project: Project) => {
 const handleProjectDeleted = (projectId: number) => {
   // 项目已在 store 中删除
   console.log('项目已删除:', projectId)
-  // 如果当前在被删除的项目页面，跳转到收件箱
+  // 如果当前在被删除的项目页面，跳转到今天页面
   if (router.currentRoute.value.name === 'project' &&
       Number(router.currentRoute.value.params.id) === projectId) {
-    router.push('/dashboard')
+    router.push('/today')
   }
 }
 

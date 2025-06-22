@@ -7,7 +7,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      redirect: '/dashboard'
+      redirect: '/today'
     },
     {
       path: '/login',
@@ -20,12 +20,6 @@ const router = createRouter({
       name: 'register',
       component: () => import('@/views/auth/RegisterView.vue'),
       meta: { requiresGuest: true }
-    },
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('@/views/DashboardView.vue'),
-      meta: { requiresAuth: true }
     },
     {
       path: '/project/:id',
@@ -44,6 +38,12 @@ const router = createRouter({
       name: 'upcoming',
       component: () => import('@/views/UpcomingView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/calendar',
+      name: 'calendar',
+      component: () => import('@/views/CalendarView.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })
@@ -51,11 +51,11 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next('/dashboard')
+    next('/today')
   } else {
     next()
   }

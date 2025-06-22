@@ -17,7 +17,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(private readonly projectsService: ProjectsService) { }
 
   @Post()
   async create(
@@ -30,11 +30,6 @@ export class ProjectsController {
   @Get()
   async findAll(@CurrentUser() user: any) {
     return this.projectsService.findAll(user.id);
-  }
-
-  @Get('inbox')
-  async getInbox(@CurrentUser() user: any) {
-    return this.projectsService.getInboxProject(user.id);
   }
 
   @Get(':id')

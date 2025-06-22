@@ -103,11 +103,32 @@
                     </div>
                     
                     <!-- 任务项 -->
-                    <div
-                      v-for="task in todayTasks"
-                      :key="task.id"
-                      class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
+                    <div v-if="todayTasks.length === 0" class="text-center py-8">
+                      <CalendarDaysIcon class="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p class="text-gray-500 dark:text-gray-400">今天没有安排任务</p>
+                      <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                        点击上方"添加任务"按钮来创建新任务
+                      </p>
+                    </div>
+
+                    <!-- 按项目分组显示任务 -->
+                    <div v-else class="space-y-6">
+                      <div v-for="group in taskGroups" :key="group.projectId" class="space-y-2">
+                        <div class="flex items-center space-x-2 mb-3">
+                          <FolderIcon class="h-4 w-4 text-gray-500" />
+                          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {{ group.projectName }}
+                          </h4>
+                          <span class="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                            {{ group.tasks.length }}
+                          </span>
+                        </div>
+                        <div class="space-y-2 ml-6">
+                          <div
+                            v-for="task in group.tasks"
+                            :key="task.id"
+                            class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                          >
                       <input
                         type="checkbox"
                         :checked="task.status === 'completed'"
@@ -130,30 +151,35 @@
                         </div>
                         
                         <div class="flex items-center space-x-2 mt-1">
-                          <span v-if="task.project" class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ task.project.name }}
+                          <span v-if="task.dueDate" class="text-xs text-gray-500 dark:text-gray-400">
+                            📅 {{ new Date(task.dueDate).toLocaleDateString() }}
                           </span>
-                          
+
+                          <!-- 优先级标签 -->
                           <span
-                            v-if="task.priority !== 'medium'"
                             :class="[
-                              'text-xs px-2 py-0.5 rounded-full',
-                              task.priority === 'high' 
+                              'text-xs px-2 py-0.5 rounded-full font-medium',
+                              task.priority === 'high'
                                 ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                : task.priority === 'medium'
+                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+                                : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                             ]"
                           >
-                            {{ task.priority === 'high' ? '高' : '低' }}优先级
+                            {{ task.priority === 'high' ? '🔴 高' : task.priority === 'medium' ? '🟡 中' : '🟢 低' }}优先级
                           </span>
                         </div>
                       </div>
                       
-                      <button
-                        @click="handleEditTask(task)"
-                        class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                      >
-                        <PencilIcon class="h-4 w-4" />
-                      </button>
+                            <button
+                              @click="handleEditTask(task)"
+                              class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            >
+                              <PencilIcon class="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </BaseCard>
@@ -172,7 +198,6 @@
       @close="showCreateTask = false"
     >
       <CreateTaskForm
-        :project-id="inboxProjectId"
         @created="handleTaskCreated"
         @cancel="showCreateTask = false"
       />
@@ -182,7 +207,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { PlusIcon, CalendarDaysIcon, PencilIcon } from '@heroicons/vue/24/outline'
+import { PlusIcon, CalendarDaysIcon, PencilIcon, FolderIcon } from '@heroicons/vue/24/outline'
 import { useTasksStore } from '@/stores/tasks'
 import { useProjectsStore } from '@/stores/projects'
 import { formatDate } from '@/utils/date'
@@ -203,15 +228,36 @@ const showCreateTask = ref(false)
 
 // 计算属性
 const todayTasks = computed(() => tasksStore.todayTasks)
-const inboxProjectId = computed(() => projectsStore.inboxProject?.id)
 
 const completedCount = computed(() => 
   todayTasks.value.filter(task => task.status === 'completed').length
 )
 
-const pendingCount = computed(() => 
+const pendingCount = computed(() =>
   todayTasks.value.filter(task => task.status === 'pending').length
 )
+
+// 按项目分组任务
+const taskGroups = computed(() => {
+  const groups = new Map()
+
+  todayTasks.value.forEach(task => {
+    const projectId = task.project?.id || 0
+    const projectName = task.project?.name || '未分类'
+
+    if (!groups.has(projectId)) {
+      groups.set(projectId, {
+        projectId,
+        projectName,
+        tasks: []
+      })
+    }
+
+    groups.get(projectId).tasks.push(task)
+  })
+
+  return Array.from(groups.values()).sort((a, b) => a.projectName.localeCompare(b.projectName))
+})
 
 // 方法
 const handleToggleTask = async (task: Task) => {

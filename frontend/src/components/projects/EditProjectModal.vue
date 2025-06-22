@@ -13,6 +13,25 @@
           required
           :error="nameError"
         />
+
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              在"今天"页面显示
+            </label>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              开启后，此项目的任务将在"今天"页面中显示
+            </p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              v-model="form.showInToday"
+              class="sr-only peer"
+            />
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+          </label>
+        </div>
       </div>
 
       <div v-if="error" class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -73,7 +92,8 @@ const projectsStore = useProjectsStore()
 
 // 响应式数据
 const form = reactive({
-  name: ''
+  name: '',
+  showInToday: true
 })
 
 const loading = ref(false)
@@ -95,6 +115,7 @@ const isFormValid = computed(() => {
 watch(() => props.project, (newProject) => {
   if (newProject) {
     form.name = newProject.name
+    form.showInToday = newProject.showInToday
   }
 }, { immediate: true })
 
@@ -114,7 +135,8 @@ const handleSubmit = async () => {
     error.value = ''
     
     const updatedProject = await projectsStore.updateProject(props.project.id, {
-      name: form.name.trim()
+      name: form.name.trim(),
+      showInToday: form.showInToday
     })
     
     emit('updated', updatedProject)

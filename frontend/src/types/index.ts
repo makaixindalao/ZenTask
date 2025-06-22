@@ -26,7 +26,7 @@ export interface Project {
   id: number
   userId: number
   name: string
-  isInbox: boolean
+  showInToday: boolean
   createdAt: string
   taskCount?: number
   uncompletedTaskCount?: number
@@ -37,7 +37,8 @@ export interface CreateProjectRequest {
 }
 
 export interface UpdateProjectRequest {
-  name: string
+  name?: string
+  showInToday?: boolean
 }
 
 // 任务相关类型

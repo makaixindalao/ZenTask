@@ -4,7 +4,7 @@ import { User, Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(data: Prisma.UserCreateInput): Promise<User> {
     return this.prisma.user.create({
@@ -37,13 +37,5 @@ export class UsersService {
     });
   }
 
-  async createInboxProject(userId: number) {
-    return this.prisma.project.create({
-      data: {
-        userId,
-        name: '收件箱',
-        isInbox: true,
-      },
-    });
-  }
+
 }

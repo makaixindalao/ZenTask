@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, MaxLength, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateProjectDto {
   @IsString()
@@ -13,13 +13,17 @@ export class UpdateProjectDto {
   @IsNotEmpty({ message: '项目名称不能为空' })
   @MaxLength(100, { message: '项目名称不能超过100个字符' })
   name?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'showInToday必须是布尔值' })
+  showInToday?: boolean;
 }
 
 export class ProjectResponseDto {
   id: number;
   userId: number;
   name: string;
-  isInbox: boolean;
+  showInToday: boolean;
   createdAt: Date;
   taskCount?: number;
   uncompletedTaskCount?: number;

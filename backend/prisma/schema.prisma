@@ -24,16 +24,16 @@ model User {
 }
 
 model Project {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  name      String   @db.VarChar(100)
-  isInbox   Boolean  @default(false) @map("is_inbox")
-  createdAt DateTime @default(now()) @map("created_at")
-  
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  name        String   @db.VarChar(100)
+  showInToday Boolean  @default(true) @map("show_in_today")
+  createdAt   DateTime @default(now()) @map("created_at")
+
   // 关联关系
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks     Task[]
-  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks       Task[]
+
   @@map("projects")
 }
 

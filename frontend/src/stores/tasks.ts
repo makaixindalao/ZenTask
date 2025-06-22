@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { 
-  Task, 
-  CreateTaskRequest, 
-  UpdateTaskRequest, 
+import type {
+  Task,
+  CreateTaskRequest,
+  UpdateTaskRequest,
   TaskQueryParams,
   ReorderTasksRequest,
   PaginatedResponse,
-  TaskStatus 
+  TaskStatus
 } from '@/types'
 import { tasksApi } from '@/api/tasks'
 
@@ -27,11 +27,11 @@ export const useTasksStore = defineStore('tasks', () => {
   })
 
   // 计算属性
-  const pendingTasks = computed(() => 
+  const pendingTasks = computed(() =>
     tasks.value.filter(task => task.status === 'pending')
   )
 
-  const completedTasks = computed(() => 
+  const completedTasks = computed(() =>
     tasks.value.filter(task => task.status === 'completed')
   )
 
@@ -40,9 +40,9 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       loading.value = true
       error.value = null
-      
+
       const response: PaginatedResponse<Task> = await tasksApi.getAll(params)
-      
+
       tasks.value = response.data
       pagination.value = {
         total: response.total,
@@ -101,10 +101,15 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       loading.value = true
       error.value = null
-      
+
       const newTask = await tasksApi.create(data)
       tasks.value.unshift(newTask)
-      
+
+      // 触发项目数据刷新以更新任务数量统计
+      const { useProjectsStore } = await import('./projects')
+      const projectsStore = useProjectsStore()
+      await projectsStore.fetchProjects()
+
       return newTask
     } catch (err: any) {
       error.value = err.response?.data?.message || '创建任务失败'
@@ -118,18 +123,25 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       loading.value = true
       error.value = null
-      
+
       const updatedTask = await tasksApi.update(id, data)
-      
+
       const index = tasks.value.findIndex(t => t.id === id)
       if (index !== -1) {
         tasks.value[index] = updatedTask
       }
-      
+
       if (currentTask.value?.id === id) {
         currentTask.value = updatedTask
       }
-      
+
+      // 如果更新了任务状态，需要刷新项目数据以更新任务数量统计
+      if (data.status) {
+        const { useProjectsStore } = await import('./projects')
+        const projectsStore = useProjectsStore()
+        await projectsStore.fetchProjects()
+      }
+
       return updatedTask
     } catch (err: any) {
       error.value = err.response?.data?.message || '更新任务失败'
@@ -143,16 +155,21 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       loading.value = true
       error.value = null
-      
+
       await tasksApi.delete(id)
-      
+
       tasks.value = tasks.value.filter(t => t.id !== id)
       todayTasks.value = todayTasks.value.filter(t => t.id !== id)
       upcomingTasks.value = upcomingTasks.value.filter(t => t.id !== id)
-      
+
       if (currentTask.value?.id === id) {
         currentTask.value = null
       }
+
+      // 触发项目数据刷新以更新任务数量统计
+      const { useProjectsStore } = await import('./projects')
+      const projectsStore = useProjectsStore()
+      await projectsStore.fetchProjects()
     } catch (err: any) {
       error.value = err.response?.data?.message || '删除任务失败'
       throw err
@@ -173,9 +190,9 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       loading.value = true
       error.value = null
-      
+
       await tasksApi.reorder(data)
-      
+
       // 更新本地任务排序
       data.tasks.forEach(({ id, sortOrder }) => {
         const task = tasks.value.find(t => t.id === id)
@@ -183,7 +200,7 @@ export const useTasksStore = defineStore('tasks', () => {
           task.sortOrder = sortOrder
         }
       })
-      
+
       // 重新排序任务列表
       tasks.value.sort((a, b) => a.sortOrder - b.sortOrder)
     } catch (err: any) {

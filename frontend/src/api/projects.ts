@@ -7,11 +7,6 @@ export const projectsApi = {
     return await api.get('/projects')
   },
 
-  // 获取收件箱项目
-  getInbox: async (): Promise<Project> => {
-    return await api.get('/projects/inbox')
-  },
-
   // 获取单个项目
   getById: async (id: number): Promise<Project> => {
     return await api.get(`/projects/${id}`)

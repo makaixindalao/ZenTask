@@ -9,7 +9,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
@@ -57,9 +57,6 @@ export class AuthService {
       email: registerDto.email,
       passwordHash,
     });
-
-    // 创建默认收件箱项目
-    await this.usersService.createInboxProject(user.id);
 
     // 生成 JWT token
     const payload = { email: user.email, sub: user.id };

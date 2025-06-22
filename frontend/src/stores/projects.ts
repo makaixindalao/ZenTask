@@ -11,13 +11,7 @@ export const useProjectsStore = defineStore('projects', () => {
   const error = ref<string | null>(null)
 
   // 计算属性
-  const inboxProject = computed(() => 
-    projects.value.find(project => project.isInbox)
-  )
-
-  const customProjects = computed(() => 
-    projects.value.filter(project => !project.isInbox)
-  )
+  const customProjects = computed(() => projects.value)
 
   // 动作
   const fetchProjects = async (): Promise<void> => {
@@ -50,10 +44,10 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       loading.value = true
       error.value = null
-      
+
       const newProject = await projectsApi.create(data)
       projects.value.push(newProject)
-      
+
       return newProject
     } catch (err: any) {
       error.value = err.response?.data?.message || '创建项目失败'
@@ -67,18 +61,18 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       loading.value = true
       error.value = null
-      
+
       const updatedProject = await projectsApi.update(id, data)
-      
+
       const index = projects.value.findIndex(p => p.id === id)
       if (index !== -1) {
         projects.value[index] = updatedProject
       }
-      
+
       if (currentProject.value?.id === id) {
         currentProject.value = updatedProject
       }
-      
+
       return updatedProject
     } catch (err: any) {
       error.value = err.response?.data?.message || '更新项目失败'
@@ -92,11 +86,11 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       loading.value = true
       error.value = null
-      
+
       await projectsApi.delete(id)
-      
+
       projects.value = projects.value.filter(p => p.id !== id)
-      
+
       if (currentProject.value?.id === id) {
         currentProject.value = null
       }
@@ -123,7 +117,6 @@ export const useProjectsStore = defineStore('projects', () => {
     loading,
     error,
     // 计算属性
-    inboxProject,
     customProjects,
     // 动作
     fetchProjects,
