@@ -54,14 +54,7 @@
         </span>
         
         <!-- 优先级标签 -->
-        <span
-          :class="[
-            'text-xs px-2 py-0.5 rounded-full font-medium',
-            getPriorityClasses(task.priority)
-          ]"
-        >
-          {{ getPriorityLabel(task.priority) }}
-        </span>
+        <PriorityLabel :priority="task.priority" />
         
         <!-- 截止日期 -->
         <span
@@ -108,6 +101,7 @@ import { CheckIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { formatDueDate, formatRelativeTime, isToday, isOverdue } from '@/utils/date'
 import { PRIORITY_CONFIG } from '@/utils/constants'
 import type { Task } from '@/types'
+import PriorityLabel from '@/components/common/PriorityLabel.vue'
 
 interface Props {
   task: Task
@@ -125,31 +119,6 @@ const emit = defineEmits<{
 }>()
 
 // 计算属性
-const getPriorityClasses = (priority: string) => {
-  switch (priority) {
-    case 'high':
-      return 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 border border-red-200 dark:border-red-800'
-    case 'medium':
-      return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800'
-    case 'low':
-      return 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800'
-    default:
-      return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
-  }
-}
-
-const getPriorityLabel = (priority: string) => {
-  switch (priority) {
-    case 'high':
-      return '高优先级'
-    case 'medium':
-      return '中优先级'
-    case 'low':
-      return '低优先级'
-    default:
-      return '普通'
-  }
-}
 
 const dueDateClasses = computed(() => {
   if (!props.task.dueDate) return ''

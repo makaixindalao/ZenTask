@@ -96,17 +96,8 @@
                               {{ task.project.name }}
                             </span>
                             
-                            <span
-                              v-if="task.priority !== 'medium'"
-                              :class="[
-                                'text-xs px-2 py-0.5 rounded-full',
-                                task.priority === 'high' 
-                                  ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                                  : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                              ]"
-                            >
-                              {{ task.priority === 'high' ? '高' : '低' }}优先级
-                            </span>
+                            <!-- 优先级标签 -->
+                            <PriorityLabel :priority="task.priority" />
                             
                             <span
                               v-if="task.dueDate"
@@ -169,6 +160,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import PriorityLabel from '@/components/common/PriorityLabel.vue'
 
 const tasksStore = useTasksStore()
 

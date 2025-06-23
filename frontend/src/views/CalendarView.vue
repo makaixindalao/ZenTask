@@ -197,18 +197,7 @@
                 📁 {{ task.project.name }}
               </span>
               
-              <span
-                :class="[
-                  'text-xs px-2 py-0.5 rounded-full font-medium',
-                  task.priority === 'high' 
-                    ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                    : task.priority === 'medium'
-                    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
-                    : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                ]"
-              >
-                {{ task.priority === 'high' ? '🔴 高' : task.priority === 'medium' ? '🟡 中' : '🟢 低' }}优先级
-              </span>
+              <PriorityLabel :priority="task.priority" />
             </div>
           </div>
         </div>
@@ -240,6 +229,7 @@ import AppSidebar from '@/components/layout/AppSidebar.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import CreateTaskForm from '@/components/tasks/CreateTaskForm.vue'
+import PriorityLabel from '@/components/common/PriorityLabel.vue'
 
 const tasksStore = useTasksStore()
 const projectsStore = useProjectsStore()
