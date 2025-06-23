@@ -97,7 +97,12 @@
                             </span>
                             
                             <!-- 优先级标签 -->
-                            <PriorityLabel :priority="task.priority" />
+                            <PriorityLabel
+                              :priority="task.priority"
+                              variant="dot"
+                              size="xs"
+                              :show-text="false"
+                            />
                             
                             <span
                               v-if="task.dueDate"

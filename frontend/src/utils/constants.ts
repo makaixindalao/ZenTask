@@ -59,9 +59,9 @@ export const FILTER_OPTIONS = {
   ],
   priority: [
     { value: 'all', label: '全部优先级' },
-    { value: 'high', label: '高优先级' },
-    { value: 'medium', label: '中优先级' },
-    { value: 'low', label: '低优先级' }
+    { value: 'high', label: '高' },
+    { value: 'medium', label: '中' },
+    { value: 'low', label: '低' }
   ]
 }
 
