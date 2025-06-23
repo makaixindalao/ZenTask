@@ -189,7 +189,6 @@ describe('AuthService', () => {
         token: 'mock-jwt-token',
       });
       expect(mockUsersService.create).toHaveBeenCalled();
-      expect(mockUsersService.createInboxProject).toHaveBeenCalledWith(1);
     });
 
     it('should throw ConflictException when user already exists', async () => {

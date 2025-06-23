@@ -13,6 +13,18 @@
   </span>
 
   <span
+    v-else-if="variant === 'compact'"
+    :class="[
+      'inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded border transition-colors duration-200',
+      compactClasses
+    ]"
+    :title="priorityTooltip"
+  >
+    <component :is="priorityIcon" class="flex-shrink-0" :class="compactIconSizeClasses" />
+    <span>{{ priorityText }}</span>
+  </span>
+
+  <span
     v-else-if="variant === 'dot'"
     :class="[
       'inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400'
@@ -43,14 +55,14 @@ import type { TaskPriority } from '@/types'
 interface Props {
   priority: TaskPriority
   size?: 'xs' | 'sm' | 'md'
-  variant?: 'badge' | 'dot' | 'minimal'
+  variant?: 'badge' | 'compact' | 'dot' | 'minimal'
   showIcon?: boolean
   showText?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 'sm',
-  variant: 'badge',
+  variant: 'compact',
   showIcon: true,
   showText: true
 })
@@ -74,6 +86,10 @@ const iconSizeClasses = computed(() => {
   return classes[props.size]
 })
 
+const compactIconSizeClasses = computed(() => {
+  return 'w-2.5 h-2.5' // 固定尺寸，保持紧凑
+})
+
 const priorityClasses = computed(() => {
   switch (props.priority) {
     case 'high':
@@ -84,6 +100,19 @@ const priorityClasses = computed(() => {
       return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
     default:
       return 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+  }
+})
+
+const compactClasses = computed(() => {
+  switch (props.priority) {
+    case 'high':
+      return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800/50'
+    case 'medium':
+      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/50'
+    case 'low':
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/50'
+    default:
+      return 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800/50 dark:text-gray-400 dark:border-gray-700/50'
   }
 })
 
