@@ -188,8 +188,17 @@
                         :key="group.name"
                         class="space-y-2"
                       >
-                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
-                          {{ group.name }} ({{ group.tasks.length }})
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2 flex items-center gap-2">
+                          <!-- 优先级分组时显示优先级标签 -->
+                          <PriorityLabel
+                            v-if="groupBy === 'priority' && getPriorityFromGroupName(group.name)"
+                            :priority="getPriorityFromGroupName(group.name)"
+                            variant="badge"
+                            size="xs"
+                            :show-icon="true"
+                            :show-text="false"
+                          />
+                          <span>{{ group.name }} ({{ group.tasks.length }})</span>
                         </h3>
                         <div class="space-y-2">
                           <TaskItem
@@ -265,6 +274,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import CreateTaskForm from '@/components/tasks/CreateTaskForm.vue'
 import TaskItem from '@/components/tasks/TaskItem.vue'
 import EditTaskModal from '@/components/tasks/EditTaskModal.vue'
+import PriorityLabel from '@/components/common/PriorityLabel.vue'
 
 const route = useRoute()
 const projectsStore = useProjectsStore()
@@ -372,6 +382,19 @@ const groupedTasks = computed(() => {
 })
 
 // 方法
+const getPriorityFromGroupName = (groupName: string) => {
+  switch (groupName) {
+    case '高优先级':
+      return 'high'
+    case '中优先级':
+      return 'medium'
+    case '低优先级':
+      return 'low'
+    default:
+      return null
+  }
+}
+
 const handleToggleTask = async (task: Task) => {
   try {
     await tasksStore.toggleTaskStatus(task.id)

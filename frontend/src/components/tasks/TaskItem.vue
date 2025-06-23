@@ -56,9 +56,8 @@
         <!-- 优先级标签 -->
         <PriorityLabel
           :priority="task.priority"
-          variant="dot"
+          variant="compact"
           size="xs"
-          :show-text="false"
         />
         
         <!-- 截止日期 -->

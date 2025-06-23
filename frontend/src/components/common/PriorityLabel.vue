@@ -1,4 +1,5 @@
 <template>
+  <!-- 徽章样式 - 完整的优先级标签 -->
   <span
     v-if="variant === 'badge'"
     :class="[
@@ -12,6 +13,19 @@
     <span v-if="showText">{{ priorityText }}</span>
   </span>
 
+  <!-- 紧凑样式 - 与日期标签一致的圆角矩形样式 -->
+  <span
+    v-else-if="variant === 'compact'"
+    :class="[
+      'text-xs px-2 py-0.5 rounded-full transition-colors duration-200',
+      compactClasses
+    ]"
+    :title="priorityTooltip"
+  >
+    {{ priorityText }}
+  </span>
+
+  <!-- 圆点样式 - 仅显示颜色圆点 -->
   <span
     v-else-if="variant === 'dot'"
     :class="[
@@ -23,6 +37,20 @@
     <span v-if="showText">{{ priorityText }}</span>
   </span>
 
+  <!-- 图标样式 - 仅显示图标 -->
+  <span
+    v-else-if="variant === 'icon'"
+    :class="[
+      'inline-flex items-center gap-1 text-xs transition-colors duration-200',
+      iconOnlyClasses
+    ]"
+    :title="priorityTooltip"
+  >
+    <component :is="priorityIcon" class="flex-shrink-0" :class="iconSizeClasses" />
+    <span v-if="showText">{{ priorityText }}</span>
+  </span>
+
+  <!-- 最小样式 - 纯文字 -->
   <span
     v-else
     :class="[
@@ -43,7 +71,7 @@ import type { TaskPriority } from '@/types'
 interface Props {
   priority: TaskPriority
   size?: 'xs' | 'sm' | 'md'
-  variant?: 'badge' | 'dot' | 'minimal'
+  variant?: 'badge' | 'compact' | 'dot' | 'icon' | 'minimal'
   showIcon?: boolean
   showText?: boolean
 }
@@ -97,6 +125,34 @@ const dotColorClasses = computed(() => {
       return 'bg-emerald-500'
     default:
       return 'bg-gray-400'
+  }
+})
+
+// 紧凑样式类 - 与日期标签保持一致的样式
+const compactClasses = computed(() => {
+  switch (props.priority) {
+    case 'high':
+      return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+    case 'medium':
+      return 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300'
+    case 'low':
+      return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300'
+    default:
+      return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+  }
+})
+
+// 仅图标样式类
+const iconOnlyClasses = computed(() => {
+  switch (props.priority) {
+    case 'high':
+      return 'text-red-500 dark:text-red-400'
+    case 'medium':
+      return 'text-amber-500 dark:text-amber-400'
+    case 'low':
+      return 'text-emerald-500 dark:text-emerald-400'
+    default:
+      return 'text-gray-400 dark:text-gray-500'
   }
 })
 

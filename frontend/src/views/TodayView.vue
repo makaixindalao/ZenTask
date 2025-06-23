@@ -151,17 +151,28 @@
                         </div>
                         
                         <div class="flex items-center space-x-2 mt-1">
-                          <span v-if="task.dueDate" class="text-xs text-gray-500 dark:text-gray-400">
-                            📅 {{ new Date(task.dueDate).toLocaleDateString() }}
+                          <!-- 项目标签 -->
+                          <span
+                            v-if="task.project"
+                            class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                          >
+                            {{ task.project.name }}
                           </span>
 
                           <!-- 优先级标签 -->
                           <PriorityLabel
                             :priority="task.priority"
-                            variant="dot"
+                            variant="compact"
                             size="xs"
-                            :show-text="false"
                           />
+
+                          <!-- 日期标签 -->
+                          <span
+                            v-if="task.dueDate"
+                            class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                          >
+                            {{ formatDueDate(task.dueDate) }}
+                          </span>
                         </div>
                       </div>
                       
@@ -204,7 +215,7 @@ import { ref, computed, onMounted } from 'vue'
 import { PlusIcon, CalendarDaysIcon, PencilIcon, FolderIcon } from '@heroicons/vue/24/outline'
 import { useTasksStore } from '@/stores/tasks'
 import { useProjectsStore } from '@/stores/projects'
-import { formatDate } from '@/utils/date'
+import { formatDate, formatDueDate } from '@/utils/date'
 import type { Task } from '@/types'
 
 import AppSidebar from '@/components/layout/AppSidebar.vue'

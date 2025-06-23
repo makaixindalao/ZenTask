@@ -193,11 +193,20 @@
             </div>
             
             <div class="flex items-center space-x-2 mt-1">
-              <span v-if="task.project" class="text-xs text-gray-500 dark:text-gray-400">
-                📁 {{ task.project.name }}
+              <!-- 项目标签 -->
+              <span
+                v-if="task.project"
+                class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+              >
+                {{ task.project.name }}
               </span>
-              
-              <PriorityLabel :priority="task.priority" />
+
+              <!-- 优先级标签 -->
+              <PriorityLabel
+                :priority="task.priority"
+                variant="compact"
+                size="xs"
+              />
             </div>
           </div>
         </div>

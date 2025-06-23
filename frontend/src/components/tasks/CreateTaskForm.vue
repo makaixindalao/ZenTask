@@ -54,14 +54,27 @@
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           优先级
         </label>
-        <select
-          v-model="form.priority"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 transition-colors duration-200"
-        >
-          <option value="low">低</option>
-          <option value="medium">中</option>
-          <option value="high">高</option>
-        </select>
+        <div class="space-y-2">
+          <select
+            v-model="form.priority"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 transition-colors duration-200"
+          >
+            <option value="low">低</option>
+            <option value="medium">中</option>
+            <option value="high">高</option>
+          </select>
+          <!-- 优先级预览 -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400">当前选择：</span>
+            <PriorityLabel
+              :priority="form.priority"
+              variant="badge"
+              size="xs"
+              :show-icon="true"
+              :show-text="true"
+            />
+          </div>
+        </div>
       </div>
       
       <!-- 截止日期 -->
@@ -101,6 +114,7 @@ import { useTasksStore } from '@/stores/tasks'
 import type { CreateTaskRequest, Task, TaskPriority } from '@/types'
 import BaseInput from '@/components/common/BaseInput.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import PriorityLabel from '@/components/common/PriorityLabel.vue'
 
 interface Props {
   projectId?: number
