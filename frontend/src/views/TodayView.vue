@@ -25,8 +25,8 @@
           </header>
           
           <!-- 内容区域 -->
-          <div class="flex-1 overflow-hidden">
-            <div class="h-full p-6">
+          <div class="flex-1 overflow-auto">
+            <div class="p-6">
               <LoadingSpinner v-if="tasksStore.loading" center text="加载今日任务..." />
               
               <div v-else-if="todayTasks.length === 0" class="flex flex-col items-center justify-center h-full text-center">

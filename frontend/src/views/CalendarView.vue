@@ -232,6 +232,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useTasksStore } from '@/stores/tasks'
 import { useProjectsStore } from '@/stores/projects'
+import { formatLocalDate, getTodayString } from '@/utils/date'
 import type { Task } from '@/types'
 
 import AppSidebar from '@/components/layout/AppSidebar.vue'
@@ -261,7 +262,7 @@ const currentMonthYear = computed(() => {
 })
 
 const selectedDateForTask = computed(() => {
-  return selectedDate.value || new Date().toISOString().split('T')[0]
+  return selectedDate.value || getTodayString()
 })
 
 const selectedDateDisplay = computed(() => {
@@ -298,16 +299,16 @@ const calendarDates = computed(() => {
   const current = new Date(startDate)
 
   while (current <= endDate) {
-    const dateString = current.toISOString().split('T')[0]
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    // 使用本地日期格式，避免时区偏移问题
+    const dateString = formatLocalDate(current)
+    const todayString = getTodayString()
 
     dates.push({
       date: new Date(current),
       dateString,
       day: current.getDate(),
       isCurrentMonth: current.getMonth() === month,
-      isToday: current.toDateString() === today.toDateString()
+      isToday: dateString === todayString
     })
 
     current.setDate(current.getDate() + 1)
@@ -323,12 +324,12 @@ const getTasksForDate = (dateString: string): Task[] => {
   return tasksStore.tasks.filter(task => {
     // 检查任务的截止日期
     if (task.dueDate) {
-      const taskDate = new Date(task.dueDate).toISOString().split('T')[0]
+      const taskDate = formatLocalDate(new Date(task.dueDate))
       return taskDate === dateString
     }
 
     // 检查任务的创建日期（对于没有截止日期的任务）
-    const createdDate = new Date(task.createdAt).toISOString().split('T')[0]
+    const createdDate = formatLocalDate(new Date(task.createdAt))
     return createdDate === dateString
   })
 }

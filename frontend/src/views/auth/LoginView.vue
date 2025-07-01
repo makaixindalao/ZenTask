@@ -108,7 +108,7 @@ const handleLogin = async () => {
 
   try {
     await authStore.login(form)
-    router.push('/dashboard')
+    router.push('/today')
   } catch (error) {
     // 错误已在 store 中处理
   }

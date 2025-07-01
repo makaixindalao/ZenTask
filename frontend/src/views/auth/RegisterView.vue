@@ -129,10 +129,10 @@ const isFormValid = computed(() => {
 
 const handleRegister = async () => {
   if (!isFormValid.value) return
-  
+
   try {
     await authStore.register(form)
-    router.push('/dashboard')
+    router.push('/today')
   } catch (error) {
     // 错误已在 store 中处理
   }

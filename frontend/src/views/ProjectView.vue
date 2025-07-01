@@ -37,8 +37,8 @@
           </header>
           
           <!-- 内容区域 -->
-          <div class="flex-1 overflow-hidden">
-            <div class="h-full p-6">
+          <div class="flex-1 overflow-auto">
+            <div class="p-6">
               <LoadingSpinner v-if="projectsStore.loading || tasksStore.loading" center text="加载项目..." />
               
               <div v-else-if="!currentProject" class="flex flex-col items-center justify-center h-full text-center">
